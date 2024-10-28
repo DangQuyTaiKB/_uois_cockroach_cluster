@@ -1,0 +1,360 @@
+﻿version: '3.8'
+x-services-volume:
+  &system-data-volume
+  type: bind
+  source: ./systemdata.min.json
+  target: /app/systemdata.json
+
+
+services:
+
+  apollo:
+    image: hrbolek/apollo_federation:latest
+    container_name: apollo
+    environment:
+      # promenne, ktere lze cist v kontejneru
+      - PORT=3000
+      - |
+        SERVICES=
+        [
+          {"name": "ug", "url": "http://gql_ug:8000/gql"},
+          {"name": "forms", "url": "http://gql_forms:8000/gql"},
+          {"name": "granting", "url": "http://gql_granting:8000/gql"},
+          {"name": "facilities", "url": "http://gql_facilities:8000/gql"},
+          {"name": "events", "url": "http://gql_events:8000/gql"},
+          {"name": "publications", "url": "http://gql_publications:8000/gql"},
+          {"name": "projects", "url": "http://gql_projects:8000/gql"},
+          {"name": "lessons", "url": "http://gql_lessons:8000/gql"},
+          {"name": "surveys", "url": "http://gql_surveys:8000/gql"},
+          {"name": "externalids", "url": "http://gql_externalids:8000/gql"}
+        ]
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku (vsimnete si portu a srovnejte s portem v environment)
+      interval: 60s
+      retries: 3
+      start_period: 60s
+      timeout: 10s
+    restart: on-failure:3 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      #v deploymentu by nebylo zadne mapovani portu
+      #   # vnejsi port : port, kde sluzbu poskytuje kontejner
+      - 33000:3000
+    depends_on:
+      - gql_events
+      - gql_ug
+      - gql_forms
+      - gql_granting
+      - gql_facilities
+      - gql_publications
+      - gql_projects
+      - gql_lessons
+      - gql_surveys
+      - gql_externalids
+      
+  gql_events:
+    # image: dangquytaikb/gql_events:latest
+    image: hrbolek/gql_events
+    container_name: gql_events
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_events:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32803:8000 
+
+
+  gql_ug:
+    # image: dangquytaikb/gql_ug:latest
+    image: hrbolek/gql_ug
+    container_name: gql_ug
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_ug:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32800:8000 
+
+
+  gql_forms:
+    # image: dangquytaikb/gql_forms:latest
+    image: hrbolek/gql_forms
+    container_name: gql_forms
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_forms:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32801:8000
+    
+  gql_granting:
+    # image: dangquytaikb/gql_granting:latest
+    image: hrbolek/gql_granting
+    container_name: gql_granting
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257  
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_granting:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32802:8000
+
+  gql_facilities:
+    # image: dangquytaikb/gql_facilities:latest
+    image: hrbolek/gql_facilities
+    container_name: gql_facilities
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_facilities:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32804:8000
+
+  gql_publications:
+    # image: dangquytaikb/gql_publications:latest
+    image: hrbolek/gql_publications
+    container_name: gql_publications
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_publications:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32805:8000
+
+  gql_projects:
+
+    # image: dangquytaikb/gql_projects:latest
+    image: hrbolek/gql_projects
+    container_name: gql_projects
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_projects:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32806:8000
+
+  gql_lessons:
+    # image: dangquytaikb/gql_lessons:latest
+    image: hrbolek/gql_lessons
+    container_name: gql_lessons
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_lessons:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32807:8000
+
+  gql_surveys:
+    # image: dangquytaikb/gql_surveys:latest
+    image: hrbolek/gql_surveys
+    container_name: gql_surveys
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_surveys:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32808:8000
+
+  gql_externalids:
+    # image: dangquytaikb/gql_externalids:latest
+    image: hrbolek/gql_externalids
+    container_name: gql_externalids
+    environment:
+      - POSTGRES_USER=roach
+      - POSTGRES_PASSWORD=roach
+      - POSTGRES_HOST=lb:26257
+      - POSTGRES_DB=mycrdb
+      # - IS_COCKROACH=True
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - GQLUG_ENDPOINT_URL=http://gql_externalids:8000/gql
+      - JWTPUBLICKEYURL=http://frontend:8000/oauth/publickey
+      - JWTRESOLVEUSERPATHURL=http://frontend:8000/oauth/userinfo
+      - DEMO=False
+      - DEMODATA=True
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku
+      test: "curl -f -H 'Content-Type: application/json' -X POST -d '{\"query\":\"query{__schema{types{name}}}\"}' http://localhost:8000/gql || exit 1"
+      interval: 30s
+      retries: 10
+      start_period: 30s
+      timeout: 10s
+    restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+    ports:
+      - 32809:8000
+
+  # ######################## frontend ##############################
+  frontend:
+    image: hrbolek/frontend:latest
+    environment:
+      - DEMO=False
+      - DEMODATA=True
+      # link na db mimo stack
+      # - POSTGRES_HOST=host.docker.internal:5432
+      # - POSTGRES_HOST=cockroach_credentials:26260 
+      # - CONNECTION_STRING=cockroachdb+asyncpg://root:@cockroach_credentials:26260/mycrdb?ssl=disable
+      - POSTGRES_HOST=lb:26257
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DB=postgres
+      - GQL_PROXY=http://apollo:3000/api/gql/
+      - SALT=fe1c71b2-74c0-41e5-978f-eecbffac7418
+    healthcheck:
+      # definice, umoznujici provest test, zda je kontejner v poradku (vsimnete si portu)
+      test: "curl -f -X GET http://localhost:8000/ || exit 1"
+      interval: 60s
+      retries: 3
+      start_period: 60s
+      timeout: 10s
+    restart: on-failure:3 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
+
+    ports:
+      - 33001:8000
+    volumes:
+      - <<: *system-data-volume
+    # volumes:
+    # # for development
+    #   - ./server/htmls:/app/server/htmls
+    #   - ./server/config.json:/app/server/config.json

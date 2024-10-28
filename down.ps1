@@ -4,4 +4,4 @@
 docker-compose down --remove-orphans --volumes
 
 # Remove the 'certs' directory and its contents
-Remove-Item -Recurse -Force certs
+Remove-Item -Recurse -Force cert
