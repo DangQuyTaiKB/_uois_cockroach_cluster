@@ -2,7 +2,8 @@
 x-services-volume:
   &system-data-volume
   type: bind
-  source: ./systemdata.min.json
+  # source: ./systemdata.min.json
+  source: ./systemdata.rnd.json
   target: /app/systemdata.json
 
 
@@ -75,8 +76,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32803:8000 
+    # ports:
+    #   - 32803:8000 
 
 
   gql_ug:
@@ -103,8 +104,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32800:8000 
+    # ports:
+    #   - 32800:8000 
 
 
   gql_forms:
@@ -131,8 +132,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32801:8000
+    # ports:
+    #   - 32801:8000
     
   gql_granting:
     # image: dangquytaikb/gql_granting:latest
@@ -158,8 +159,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32802:8000
+    # ports:
+    #   - 32802:8000
 
   gql_facilities:
     # image: dangquytaikb/gql_facilities:latest
@@ -185,8 +186,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32804:8000
+    # ports:
+    #   - 32804:8000
 
   gql_publications:
     # image: dangquytaikb/gql_publications:latest
@@ -212,8 +213,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32805:8000
+    # ports:
+    #   - 32805:8000
 
   gql_projects:
 
@@ -240,8 +241,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32806:8000
+    # ports:
+    #   - 32806:8000
 
   gql_lessons:
     # image: dangquytaikb/gql_lessons:latest
@@ -267,8 +268,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32807:8000
+    # ports:
+    #   - 32807:8000
 
   gql_surveys:
     # image: dangquytaikb/gql_surveys:latest
@@ -294,8 +295,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32808:8000
+    # ports:
+    #   - 32808:8000
 
   gql_externalids:
     # image: dangquytaikb/gql_externalids:latest
@@ -321,8 +322,8 @@ services:
       start_period: 30s
       timeout: 10s
     restart: on-failure:30 # nedojde k restartu pokud je kontejner "unhealthy", maximalne 3 pokusy
-    ports:
-      - 32809:8000
+    # ports:
+    #   - 32809:8000
 
   # ######################## frontend ##############################
   frontend:
@@ -335,7 +336,7 @@ services:
       # - POSTGRES_HOST=cockroach_credentials:26260 
       # - CONNECTION_STRING=cockroachdb+asyncpg://root:@cockroach_credentials:26260/mycrdb?ssl=disable
       - POSTGRES_HOST=lb:26257
-      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/mycrdb?ssl=require
+      - CONNECTION_STRING=cockroachdb+asyncpg://roach:roach@lb:26257/postgres?ssl=require
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=
       - POSTGRES_DB=postgres
